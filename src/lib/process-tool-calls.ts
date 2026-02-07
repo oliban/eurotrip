@@ -8,7 +8,7 @@ import {
 } from './types';
 
 function generateId(): string {
-  return Math.random().toString(36).substring(2, 10);
+  return crypto.randomUUID();
 }
 
 function findStopByName(stops: Stop[], name: string): Stop | undefined {

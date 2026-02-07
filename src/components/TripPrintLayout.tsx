@@ -135,13 +135,9 @@ const TripPrintLayout = React.forwardRef<HTMLDivElement, TripPrintLayoutProps>(
 
     let totalEstimatedCost = 0;
     for (const stop of stops) {
-      if (stop.daily_budget) {
-        totalEstimatedCost += stop.daily_budget * stop.nights;
-      } else {
-        const accomCost = (stop.accommodation?.cost_per_night || 0) * stop.nights;
-        const activityCost = stop.activities.reduce((sum, a) => sum + (a.cost_estimate || 0), 0);
-        totalEstimatedCost += accomCost + activityCost;
-      }
+      const accomCost = (stop.accommodation?.cost_per_night || 0) * stop.nights;
+      const activityCost = stop.activities.reduce((sum, a) => sum + (a.cost_estimate || 0), 0);
+      totalEstimatedCost += accomCost + activityCost;
     }
 
     const currency = metadata.currency || 'EUR';
@@ -192,13 +188,9 @@ const TripPrintLayout = React.forwardRef<HTMLDivElement, TripPrintLayoutProps>(
             const { stop, index, arrivalDay, departureDay, arrivalDateStr, departureDateStr, routeFromPrev } = info;
             const flag = getFlag(stop.country);
 
-            const stopBudget = stop.daily_budget
-              ? stop.daily_budget * stop.nights
-              : (() => {
-                  const accom = (stop.accommodation?.cost_per_night || 0) * stop.nights;
-                  const acts = stop.activities.reduce((s, a) => s + (a.cost_estimate || 0), 0);
-                  return accom + acts;
-                })();
+            const accom = (stop.accommodation?.cost_per_night || 0) * stop.nights;
+            const acts = stop.activities.reduce((s, a) => s + (a.cost_estimate || 0), 0);
+            const stopBudget = accom + acts;
 
             return (
               <div key={stop.id} className="print-stop mb-4">

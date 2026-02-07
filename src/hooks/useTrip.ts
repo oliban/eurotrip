@@ -2,7 +2,7 @@ import { useReducer, useCallback } from 'react';
 import { TripState, TripAction, Stop, DEFAULT_TRIP_STATE } from '@/lib/types';
 
 function generateId(): string {
-  return Math.random().toString(36).substring(2, 10);
+  return crypto.randomUUID();
 }
 
 export function tripReducer(state: TripState, action: TripAction): TripState {

@@ -236,32 +236,36 @@ export default function PlanView({ onExportPdf, className = '' }: PlanViewProps)
 
             return (
               <div key={stop.id}>
-                {/* Driving / ferry info between stops */}
-                {routeFromPrev && (routeFromPrev.is_ferry ? (
-                  <div className="mb-2 flex items-center justify-center gap-2 py-1 text-xs text-blue-400">
-                    <span>{'\u26F4'}</span>
-                    <span>Ferry / flight</span>
+                {/* Travel segment card between stops */}
+                {routeFromPrev && (
+                  <div className="mb-3 flex items-center gap-3 rounded-lg border border-dashed border-zinc-200 bg-zinc-50/50 px-4 py-2.5">
+                    {routeFromPrev.is_ferry ? (
+                      <>
+                        <span className="text-lg">{'\u26F4'}</span>
+                        <div className="text-sm text-zinc-500">
+                          <span className="font-medium text-zinc-600">Ferry / {t['plan.flight']}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-lg">{'\u{1F699}'}</span>
+                        <div className="flex items-center gap-3 text-sm text-zinc-500">
+                          {routeFromPrev.duration_hours !== undefined && (
+                            <span className="font-medium text-zinc-600">
+                              {routeFromPrev.duration_hours < 1
+                                ? `${Math.round(routeFromPrev.duration_hours * 60)} min`
+                                : `${routeFromPrev.duration_hours.toFixed(1)} h`
+                              }
+                            </span>
+                          )}
+                          {routeFromPrev.distance_km !== undefined && (
+                            <span>{Math.round(routeFromPrev.distance_km)} km</span>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
-                ) : (routeFromPrev.duration_hours || routeFromPrev.distance_km) && (
-                  <div className="mb-2 flex items-center justify-center gap-2 py-1 text-xs text-zinc-400">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12,6 12,12 16,14" />
-                    </svg>
-                    <span>
-                      {routeFromPrev.duration_hours !== undefined && (
-                        <>{routeFromPrev.duration_hours < 1
-                          ? `${Math.round(routeFromPrev.duration_hours * 60)} min`
-                          : `${routeFromPrev.duration_hours.toFixed(1)} hrs`
-                        }</>
-                      )}
-                      {routeFromPrev.duration_hours !== undefined && routeFromPrev.distance_km !== undefined && ', '}
-                      {routeFromPrev.distance_km !== undefined && (
-                        <>{Math.round(routeFromPrev.distance_km)} km</>
-                      )}
-                    </span>
-                  </div>
-                ))}
+                )}
 
                 {/* Stop card */}
                 <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">

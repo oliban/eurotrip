@@ -84,9 +84,8 @@ const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function ChatInput
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder={t['input.placeholder']}
-          disabled={isActive}
           rows={1}
-          className="flex-1 resize-none bg-transparent text-sm text-zinc-900 placeholder-zinc-400 outline-none disabled:opacity-50 min-h-[24px]"
+          className="flex-1 resize-none bg-transparent text-sm text-zinc-900 placeholder-zinc-400 outline-none min-h-[24px]"
           style={{ maxHeight: '120px' }}
         />
 

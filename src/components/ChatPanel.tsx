@@ -132,7 +132,7 @@ export default function ChatPanel() {
           <div className="flex h-full flex-col items-center justify-center px-4">
             <div className="mb-2 text-4xl">
               {/* Car/road emoji as visual cue */}
-              <span role="img" aria-hidden="true" className="select-none">{'\u{1F697}'}</span>
+              <span role="img" aria-hidden="true" className="select-none">{'\u{1F699}'}</span>
             </div>
             <h2 className="mb-2 text-lg font-semibold text-zinc-900 text-center">
               {t['chat.emptyTitle']}
@@ -179,27 +179,10 @@ export default function ChatPanel() {
             {/* Tool processing indicator */}
             {status === 'processing_tools' && (
               <div className="flex items-center gap-2 px-1 py-2 text-sm text-zinc-500">
-                <svg
-                  className="h-4 w-4 animate-spin text-blue-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                {t['chat.updatingTrip']}
+                <span className="dot-hop inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+                <span className="dot-hop inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+                <span className="dot-hop inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+                <span className="ml-1">{t['chat.updatingTrip']}</span>
               </div>
             )}
 

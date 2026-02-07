@@ -29,6 +29,7 @@ export interface Translations {
   'plan.perNight': string;
   'plan.accommodation': string;
   'plan.totalForStay': string;
+  'plan.flight': string;
   'plan.tripSummary': string;
   'plan.totalNights': string;
   'plan.driving': string;
@@ -71,6 +72,7 @@ const en: Translations = {
   'plan.perNight': '/night',
   'plan.accommodation': 'Accommodation',
   'plan.totalForStay': 'total',
+  'plan.flight': 'flight',
   'plan.tripSummary': 'Trip Summary',
   'plan.totalNights': 'Total nights',
   'plan.driving': 'Driving',
@@ -111,6 +113,7 @@ const sv: Translations = {
   'plan.perNight': '/natt',
   'plan.accommodation': 'Boende',
   'plan.totalForStay': 'totalt',
+  'plan.flight': 'flyg',
   'plan.tripSummary': 'Resöversikt',
   'plan.totalNights': 'Totalt nätter',
   'plan.driving': 'Körtid',
