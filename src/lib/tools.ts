@@ -31,7 +31,7 @@ export const TRIP_TOOLS = [
                     cost_estimate: { type: 'number' as const },
                     category: {
                       type: 'string' as const,
-                      enum: ['sightseeing', 'food', 'adventure', 'culture', 'relaxation', 'nightlife', 'shopping'],
+                      enum: ['sightseeing', 'food', 'adventure', 'culture', 'relaxation', 'nightlife', 'shopping', 'burger'],
                     },
                   },
                   required: ['name'],
@@ -188,6 +188,33 @@ export const TRIP_TOOLS = [
         total_budget: { type: 'number' as const, description: 'Total budget in EUR' },
         currency: { type: 'string' as const, description: 'Currency code (default: EUR)' },
       },
+    },
+  },
+  {
+    name: 'add_burger_recommendations',
+    description:
+      'Add hamburger restaurant recommendations to a stop. Use this to suggest the best burger joints at each destination for burger enthusiasts. Include local specialties, famous chains, and hidden gems.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        stop_name: { type: 'string' as const, description: 'Name of the stop to add burger recommendations to' },
+        burger_spots: {
+          type: 'array' as const,
+          description: 'List of burger restaurants and what makes them special',
+          items: {
+            type: 'object' as const,
+            properties: {
+              name: { type: 'string' as const, description: 'Restaurant name' },
+              signature_burger: { type: 'string' as const, description: 'Their famous burger' },
+              price_range: { type: 'string' as const, description: 'Price range (€, €€, €€€)' },
+              specialty: { type: 'string' as const, description: 'What makes this place special' },
+              must_try: { type: 'boolean' as const, description: 'Is this a must-visit for burger lovers?' },
+            },
+            required: ['name', 'signature_burger'],
+          },
+        },
+      },
+      required: ['stop_name', 'burger_spots'],
     },
   },
 ] as const;

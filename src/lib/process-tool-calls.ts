@@ -195,6 +195,49 @@ export function processToolCall(
       };
     }
 
+    case 'add_burger_recommendations': {
+      const inp = input as Record<string, unknown>;
+      const stopName = String(inp.stop_name || '');
+      const found = findStopByName(currentState.stops, stopName);
+
+      if (!found) {
+        return {
+          actions: [],
+          result: `Error: Stop "${stopName}" not found. Current stops: ${currentState.stops.map((s) => s.name).join(', ')}`,
+        };
+      }
+
+      const burgerSpots = inp.burger_spots as Array<Record<string, unknown>>;
+      if (!Array.isArray(burgerSpots) || burgerSpots.length === 0) {
+        return { actions: [], result: 'Error: burger_spots array is required and must not be empty.' };
+      }
+
+      // Convert burger recommendations to activities with category 'burger'
+      const burgerActivities: Activity[] = burgerSpots.map((spot) => ({
+        name: `🍔 ${String(spot.name || '')}`,
+        description: `${String(spot.signature_burger || 'Signature burger')}\n${String(spot.specialty || '')}\n${spot.must_try ? '⭐ MUST TRY!' : ''}`,
+        category: 'burger' as Activity['category'],
+        cost_estimate: spot.price_range === '€' ? 12 : spot.price_range === '€€' ? 18 : 25,
+        duration_hours: 1,
+      }));
+
+      // Append burger activities to existing activities
+      const updatedActivities = [...(found.activities || []), ...burgerActivities];
+
+      return {
+        actions: [
+          {
+            type: 'UPDATE_STOP',
+            payload: {
+              stopId: found.id,
+              updates: { activities: updatedActivities },
+            },
+          },
+        ],
+        result: `Added ${burgerActivities.length} burger recommendations to ${found.name}: ${burgerSpots.map((s) => s.name).join(', ')} 🍔`,
+      };
+    }
+
     default:
       return { actions: [], result: `Unknown tool: ${name}` };
   }
