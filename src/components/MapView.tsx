@@ -102,7 +102,7 @@ export default function MapView() {
       map.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [mapboxToken]);
 
   // Update markers when stops change
   useEffect(() => {
