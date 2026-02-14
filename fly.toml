@@ -4,6 +4,7 @@ app = "eurotrip"
 primary_region = "arn" # Stockholm region
 
 [build]
+  dockerfile = "Dockerfile"
 
 [http_service]
   internal_port = 3000
