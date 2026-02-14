@@ -317,7 +317,7 @@ export default function PlanView({ onExportPdf, className = '' }: PlanViewProps)
                               <BurgerCard
                                 key={ai}
                                 activity={activity}
-                                travelers={tripState.metadata.travelers || 1}
+                                travelers={metadata.travelers || 1}
                                 currency={currency}
                               />
                             );
