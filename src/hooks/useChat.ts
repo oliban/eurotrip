@@ -394,17 +394,11 @@ export function useChat(options?: UseChatOptions) {
           // Build API messages
           const apiMessages = buildApiMessages(currentMessages.slice(0, -1), pendingToolResults);
 
-          // Get user's API key from localStorage
-          const apiKey = typeof window !== 'undefined' 
-            ? localStorage.getItem('eurotrip_anthropic_key')
-            : null;
-
-          // Make the API request
+          // Make the API request (server-side API key only)
           const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              ...(apiKey ? { 'x-anthropic-key': apiKey } : {}),
             },
             body: JSON.stringify({
               messages: apiMessages,
