@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useTripState, useTripDispatch } from '@/store/trip-context';
 import { useRoute } from '@/hooks/useRoute';
+import { useBurgerPlaces } from '@/hooks/useBurgerPlaces';
 import { Stop, RouteSegment } from '@/lib/types';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
@@ -13,10 +14,13 @@ export default function MapView() {
   const { stops, route_segments } = useTripState();
   const dispatch = useTripDispatch();
   const { isLoading } = useRoute();
+  const [showBurgers, setShowBurgers] = useState(false);
+  const { burgerPlaces, loading: burgersLoading } = useBurgerPlaces(stops, showBurgers);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const burgerMarkersRef = useRef<mapboxgl.Marker[]>([]);
 
   // Initialize map ONCE
   useEffect(() => {
@@ -202,11 +206,98 @@ export default function MapView() {
     }
   }, [route_segments]);
 
+  // Update burger markers when burger places change
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !showBurgers) {
+      // Remove all burger markers if disabled
+      burgerMarkersRef.current.forEach((marker) => marker.remove());
+      burgerMarkersRef.current = [];
+      return;
+    }
+
+    // Remove existing burger markers
+    burgerMarkersRef.current.forEach((marker) => marker.remove());
+    burgerMarkersRef.current = [];
+
+    // Add new burger markers
+    burgerPlaces.forEach((place) => {
+      const el = document.createElement('div');
+      el.style.width = '28px';
+      el.style.height = '28px';
+      el.style.borderRadius = '50%';
+      el.style.backgroundColor = '#f59e0b';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.style.fontSize = '16px';
+      el.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
+      el.style.cursor = 'pointer';
+      el.style.border = '2px solid white';
+      el.textContent = '🍔';
+
+      const popupHtml = `
+        <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 200px;">
+          <strong style="font-size: 13px;">${place.name}</strong>
+          <br/>
+          <span style="color: #6b7280; font-size: 11px;">⭐ ${place.rating}/5</span>
+          ${place.priceLevel ? `<span style="color: #6b7280; font-size: 11px;"> • ${'€'.repeat(place.priceLevel)}</span>` : ''}
+          <br/>
+          <span style="color: #6b7280; font-size: 11px;">${place.address}</span>
+        </div>
+      `;
+
+      const popup = new mapboxgl.Popup({
+        offset: 15,
+        closeButton: false,
+      }).setHTML(popupHtml);
+
+      const marker = new mapboxgl.Marker({ element: el })
+        .setLngLat([place.location.lng, place.location.lat])
+        .setPopup(popup)
+        .addTo(map);
+
+      burgerMarkersRef.current.push(marker);
+    });
+  }, [burgerPlaces, showBurgers]);
+
   return (
     <div className="relative w-full h-full">
       <div ref={containerRef} className="w-full h-full" style={{ minHeight: '300px' }} />
+      
+      {/* Burger toggle button */}
+      {stops.length > 0 && (
+        <button
+          onClick={() => setShowBurgers(!showBurgers)}
+          className={`absolute top-3 left-3 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md text-sm font-medium flex items-center gap-2 transition-colors ${
+            showBurgers
+              ? 'bg-amber-500 text-white hover:bg-amber-600'
+              : 'bg-white/90 text-gray-700 hover:bg-white'
+          }`}
+        >
+          <span className="text-base">🍔</span>
+          {showBurgers ? 'Hide' : 'Show'} Burger Spots
+          {burgersLoading && (
+            <svg
+              className="animate-spin h-3 w-3"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          )}
+        </button>
+      )}
+
+      {/* Route loading indicator */}
       {isLoading && (
-        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md text-sm text-gray-700 flex items-center gap-2">
+        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md text-sm text-gray-700 flex items-center gap-2">
           <svg
             className="animate-spin h-4 w-4 text-blue-600"
             xmlns="http://www.w3.org/2000/svg"

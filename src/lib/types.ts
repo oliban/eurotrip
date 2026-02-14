@@ -12,7 +12,11 @@ export interface Activity {
   description?: string;
   duration_hours?: number;
   cost_estimate?: number;
-  category?: 'sightseeing' | 'food' | 'adventure' | 'culture' | 'relaxation' | 'nightlife' | 'shopping';
+  category?: 'sightseeing' | 'food' | 'adventure' | 'culture' | 'relaxation' | 'nightlife' | 'shopping' | 'burger' | 'fondue';
+  // Additional fields for detailed food recommendations (burger/fondue):
+  specialty?: string;  // e.g., "Smash burger with truffle fries"
+  address?: string;    // Restaurant address
+  time?: string;       // e.g., "Lunch 13:00" or "Dinner 19:00"
 }
 
 export interface Accommodation {
@@ -43,6 +47,16 @@ export interface RouteSegment {
   is_ferry?: boolean;
 }
 
+export type TripMode = 'standard' | 'burger_challenge';
+
+export interface BurgerAchievement {
+  city: string;
+  restaurantName: string;
+  specialty: string;
+  rarity: 'common' | 'rare' | 'legendary';
+  collected: boolean;
+}
+
 export interface TripMetadata {
   name: string;
   start_date?: string;
@@ -50,6 +64,9 @@ export interface TripMetadata {
   travelers?: number;
   total_budget?: number;
   currency?: string;
+  mode?: TripMode;
+  burgerScore?: number;
+  burgersCollected?: BurgerAchievement[];
 }
 
 export interface TripState {
@@ -82,7 +99,21 @@ export type TripAction =
   | { type: 'SET_ROUTE_SEGMENTS'; payload: RouteSegment[] }
   | { type: 'SET_SELECTED_STOP'; payload: string | null }
   | { type: 'LOAD_STATE'; payload: TripState }
-  | { type: 'RESET' };
+  | { type: 'RESET' }
+  | {
+      type: 'ADD_BURGER_RECOMMENDATIONS';
+      payload: Array<{
+        stop_name: string;
+        burgers: Array<{
+          restaurant_name: string;
+          specialty: string;
+          address?: string;
+          cost_estimate: number;
+          time_suggestion?: string;
+          description?: string;
+        }>;
+      }>;
+    };
 
 // ============================================
 // Chat Types

@@ -5,6 +5,7 @@ import {
   Activity,
   Accommodation,
   TripState,
+  BurgerAchievement,
 } from './types';
 
 function generateId(): string {
@@ -197,44 +198,164 @@ export function processToolCall(
 
     case 'add_burger_recommendations': {
       const inp = input as Record<string, unknown>;
-      const stopName = String(inp.stop_name || '');
-      const found = findStopByName(currentState.stops, stopName);
+      const recommendations = inp.recommendations as Array<{
+        stop_name: string;
+        burgers: Array<{
+          restaurant_name: string;
+          specialty: string;
+          address?: string;
+          cost_estimate: number;
+          time_suggestion?: string;
+          description?: string;
+        }>;
+      }>;
 
-      if (!found) {
-        return {
-          actions: [],
-          result: `Error: Stop "${stopName}" not found. Current stops: ${currentState.stops.map((s) => s.name).join(', ')}`,
-        };
+      if (!Array.isArray(recommendations) || recommendations.length === 0) {
+        return { actions: [], result: 'Error: recommendations array is required and must not be empty.' };
       }
 
-      const burgerSpots = inp.burger_spots as Array<Record<string, unknown>>;
-      if (!Array.isArray(burgerSpots) || burgerSpots.length === 0) {
-        return { actions: [], result: 'Error: burger_spots array is required and must not be empty.' };
+      const actions: TripAction[] = [];
+      const results: string[] = [];
+      const isBurgerChallenge = currentState.metadata.mode === 'burger_challenge';
+      let totalScore = currentState.metadata.burgerScore || 0;
+      const allAchievements = [...(currentState.metadata.burgersCollected || [])];
+
+      for (const rec of recommendations) {
+        const stopName = rec.stop_name;
+        const found = findStopByName(currentState.stops, stopName);
+
+        if (!found) {
+          results.push(`⚠️ Stop "${stopName}" not found, skipped`);
+          continue;
+        }
+
+        // Convert burger recommendations to activities with category 'burger'
+        const burgerActivities: Activity[] = rec.burgers.map((burger) => {
+          // Parse rarity from description in burger challenge mode
+          let rarity: 'common' | 'rare' | 'legendary' = 'common';
+          if (isBurgerChallenge && burger.description) {
+            if (burger.description.toLowerCase().includes('legendary')) {
+              rarity = 'legendary';
+              totalScore += 10;
+            } else if (burger.description.toLowerCase().includes('rare')) {
+              rarity = 'rare';
+              totalScore += 5;
+            } else {
+              totalScore += 2;
+            }
+
+            // Add achievement
+            allAchievements.push({
+              city: stopName,
+              restaurantName: burger.restaurant_name,
+              specialty: burger.specialty,
+              rarity,
+              collected: true,
+            });
+          }
+
+          return {
+            name: burger.restaurant_name,
+            category: 'burger' as Activity['category'],
+            specialty: burger.specialty,
+            address: burger.address,
+            cost_estimate: burger.cost_estimate * (currentState.metadata.travelers || 1), // Total for group
+            time: burger.time_suggestion,
+            description: burger.description,
+            duration_hours: 1,
+          };
+        });
+
+        // Append burger activities to existing activities
+        const updatedActivities = [...(found.activities || []), ...burgerActivities];
+
+        actions.push({
+          type: 'UPDATE_STOP',
+          payload: {
+            stopId: found.id,
+            updates: { activities: updatedActivities },
+          },
+        });
+
+        results.push(`Added ${burgerActivities.length} burger spots to ${found.name}: ${rec.burgers.map((b) => b.restaurant_name).join(', ')}`);
       }
 
-      // Convert burger recommendations to activities with category 'burger'
-      const burgerActivities: Activity[] = burgerSpots.map((spot) => ({
-        name: `🍔 ${String(spot.name || '')}`,
-        description: `${String(spot.signature_burger || 'Signature burger')}\n${String(spot.specialty || '')}\n${spot.must_try ? '⭐ MUST TRY!' : ''}`,
-        category: 'burger' as Activity['category'],
-        cost_estimate: spot.price_range === '€' ? 12 : spot.price_range === '€€' ? 18 : 25,
-        duration_hours: 1,
-      }));
-
-      // Append burger activities to existing activities
-      const updatedActivities = [...(found.activities || []), ...burgerActivities];
+      // Update burger challenge metadata if in that mode
+      if (isBurgerChallenge) {
+        actions.push({
+          type: 'UPDATE_TRIP',
+          payload: {
+            burgerScore: totalScore,
+            burgersCollected: allAchievements,
+          },
+        });
+      }
 
       return {
-        actions: [
-          {
-            type: 'UPDATE_STOP',
-            payload: {
-              stopId: found.id,
-              updates: { activities: updatedActivities },
-            },
+        actions,
+        result: results.join('\n') + ' 🍔',
+      };
+    }
+
+    case 'add_fondue_recommendations': {
+      const inp = input as Record<string, unknown>;
+      const recommendations = inp.recommendations as Array<{
+        stop_name: string;
+        fondues: Array<{
+          restaurant_name: string;
+          specialty: string;
+          address?: string;
+          cost_estimate: number;
+          time_suggestion?: string;
+          description?: string;
+        }>;
+      }>;
+
+      if (!Array.isArray(recommendations) || recommendations.length === 0) {
+        return { actions: [], result: 'Error: recommendations array is required and must not be empty.' };
+      }
+
+      const actions: TripAction[] = [];
+      const results: string[] = [];
+
+      for (const rec of recommendations) {
+        const stopName = rec.stop_name;
+        const found = findStopByName(currentState.stops, stopName);
+
+        if (!found) {
+          results.push(`⚠️ Stop "${stopName}" not found, skipped`);
+          continue;
+        }
+
+        // Convert fondue recommendations to activities with category 'fondue'
+        const fondueActivities: Activity[] = rec.fondues.map((fondue) => ({
+          name: fondue.restaurant_name,
+          category: 'fondue' as Activity['category'],
+          specialty: fondue.specialty,
+          address: fondue.address,
+          cost_estimate: fondue.cost_estimate * (currentState.metadata.travelers || 1), // Total for group
+          time: fondue.time_suggestion,
+          description: fondue.description,
+          duration_hours: 2, // Fondue is typically a longer meal
+        }));
+
+        // Append fondue activities to existing activities
+        const updatedActivities = [...(found.activities || []), ...fondueActivities];
+
+        actions.push({
+          type: 'UPDATE_STOP',
+          payload: {
+            stopId: found.id,
+            updates: { activities: updatedActivities },
           },
-        ],
-        result: `Added ${burgerActivities.length} burger recommendations to ${found.name}: ${burgerSpots.map((s) => s.name).join(', ')} 🍔`,
+        });
+
+        results.push(`Added ${fondueActivities.length} fondue spots to ${found.name}: ${rec.fondues.map((f) => f.restaurant_name).join(', ')}`);
+      }
+
+      return {
+        actions,
+        result: results.join('\n') + ' 🧀',
       };
     }
 

@@ -193,28 +193,77 @@ export const TRIP_TOOLS = [
   {
     name: 'add_burger_recommendations',
     description:
-      'Add hamburger restaurant recommendations to a stop. Use this to suggest the best burger joints at each destination for burger enthusiasts. Include local specialties, famous chains, and hidden gems.',
+      'Add burger restaurant recommendations as activities to one or more stops. Use this after creating a route when the user is a burger enthusiast. Include specific restaurants with names, specialties, addresses, and costs.',
     input_schema: {
       type: 'object' as const,
       properties: {
-        stop_name: { type: 'string' as const, description: 'Name of the stop to add burger recommendations to' },
-        burger_spots: {
+        recommendations: {
           type: 'array' as const,
-          description: 'List of burger restaurants and what makes them special',
+          description: 'Burger recommendations grouped by stop',
           items: {
             type: 'object' as const,
             properties: {
-              name: { type: 'string' as const, description: 'Restaurant name' },
-              signature_burger: { type: 'string' as const, description: 'Their famous burger' },
-              price_range: { type: 'string' as const, description: 'Price range (€, €€, €€€)' },
-              specialty: { type: 'string' as const, description: 'What makes this place special' },
-              must_try: { type: 'boolean' as const, description: 'Is this a must-visit for burger lovers?' },
+              stop_name: { type: 'string' as const, description: 'Name of the city/stop' },
+              burgers: {
+                type: 'array' as const,
+                description: 'List of burger restaurants for this stop',
+                items: {
+                  type: 'object' as const,
+                  properties: {
+                    restaurant_name: { type: 'string' as const, description: 'Restaurant name' },
+                    specialty: { type: 'string' as const, description: 'Signature burger or dish (e.g., "Classic smash burger with truffle fries")' },
+                    address: { type: 'string' as const, description: 'Street address' },
+                    cost_estimate: { type: 'number' as const, description: 'Cost per person in EUR' },
+                    time_suggestion: { type: 'string' as const, description: 'Recommended time (e.g., "Lunch", "Dinner")' },
+                    description: { type: 'string' as const, description: 'What makes this place special' },
+                  },
+                  required: ['restaurant_name', 'specialty', 'cost_estimate'],
+                },
+              },
             },
-            required: ['name', 'signature_burger'],
+            required: ['stop_name', 'burgers'],
           },
         },
       },
-      required: ['stop_name', 'burger_spots'],
+      required: ['recommendations'],
+    },
+  },
+  {
+    name: 'add_fondue_recommendations',
+    description:
+      'Add cheese fondue restaurant recommendations as activities to Swiss stops. Use when the route passes through Switzerland and the user loves fondue. Include specific restaurants with traditional Swiss fondue experiences.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        recommendations: {
+          type: 'array' as const,
+          description: 'Fondue recommendations grouped by stop',
+          items: {
+            type: 'object' as const,
+            properties: {
+              stop_name: { type: 'string' as const, description: 'Name of the city/stop (should be in Switzerland)' },
+              fondues: {
+                type: 'array' as const,
+                description: 'List of fondue restaurants for this stop',
+                items: {
+                  type: 'object' as const,
+                  properties: {
+                    restaurant_name: { type: 'string' as const, description: 'Restaurant name' },
+                    specialty: { type: 'string' as const, description: 'Type of fondue (e.g., "Traditional Gruyère & Vacherin blend")' },
+                    address: { type: 'string' as const, description: 'Street address' },
+                    cost_estimate: { type: 'number' as const, description: 'Cost per person in EUR' },
+                    time_suggestion: { type: 'string' as const, description: 'Recommended time (usually "Dinner")' },
+                    description: { type: 'string' as const, description: 'What makes this place special' },
+                  },
+                  required: ['restaurant_name', 'specialty', 'cost_estimate'],
+                },
+              },
+            },
+            required: ['stop_name', 'fondues'],
+          },
+        },
+      },
+      required: ['recommendations'],
     },
   },
 ] as const;

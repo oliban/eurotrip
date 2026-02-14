@@ -2,6 +2,7 @@
 
 import { useTripState } from '@/store/trip-context';
 import { useLocale } from '@/hooks/useLocale';
+import { BurgerCard } from './BurgerCard';
 import type { Stop, RouteSegment } from '@/lib/types';
 
 // Country name -> flag emoji lookup for common European countries
@@ -144,6 +145,10 @@ function getCategoryIcon(category?: string): string {
       return '\u{1F378}';
     case 'shopping':
       return '\u{1F6CD}';
+    case 'burger':
+      return '\u{1F354}'; // 🍔
+    case 'fondue':
+      return '\u{1F9C0}'; // 🧀
     default:
       return '\u{2022}';
   }
@@ -304,25 +309,40 @@ export default function PlanView({ onExportPdf, className = '' }: PlanViewProps)
                       <h4 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-400">
                         {t['plan.activities']}
                       </h4>
-                      <ul className="space-y-1">
-                        {stop.activities.map((activity, ai) => (
-                          <li key={ai} className="flex items-start gap-2 text-sm text-zinc-700">
-                            <span className="mt-0.5 shrink-0 text-xs">
-                              {getCategoryIcon(activity.category)}
-                            </span>
-                            <div className="flex-1">
-                              <span className="font-medium">{activity.name}</span>
-                              {activity.description && (
-                                <span className="text-zinc-500"> &mdash; {activity.description}</span>
-                              )}
-                              <span className="ml-1 text-zinc-400">
-                                {activity.duration_hours && ` ${activity.duration_hours}h`}
-                                {activity.cost_estimate !== undefined && activity.cost_estimate > 0 && ` \u00B7 ${currencySymbol}${activity.cost_estimate}`}
+                      <div className="space-y-2">
+                        {stop.activities.map((activity, ai) => {
+                          // Use special card for burger and fondue activities
+                          if (activity.category === 'burger' || activity.category === 'fondue') {
+                            return (
+                              <BurgerCard
+                                key={ai}
+                                activity={activity}
+                                travelers={tripState.metadata.travelers || 1}
+                                currency={currency}
+                              />
+                            );
+                          }
+                          
+                          // Regular activity rendering
+                          return (
+                            <div key={ai} className="flex items-start gap-2 text-sm text-zinc-700">
+                              <span className="mt-0.5 shrink-0 text-xs">
+                                {getCategoryIcon(activity.category)}
                               </span>
+                              <div className="flex-1">
+                                <span className="font-medium">{activity.name}</span>
+                                {activity.description && (
+                                  <span className="text-zinc-500"> &mdash; {activity.description}</span>
+                                )}
+                                <span className="ml-1 text-zinc-400">
+                                  {activity.duration_hours && ` ${activity.duration_hours}h`}
+                                  {activity.cost_estimate !== undefined && activity.cost_estimate > 0 && ` \u00B7 ${currencySymbol}${activity.cost_estimate}`}
+                                </span>
+                              </div>
                             </div>
-                          </li>
-                        ))}
-                      </ul>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
 

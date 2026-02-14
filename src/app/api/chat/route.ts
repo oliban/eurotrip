@@ -20,10 +20,13 @@ function checkRateLimit(ip: string): boolean {
 }
 
 export async function POST(req: Request) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  // Accept user-provided API key or fall back to server key
+  const userApiKey = req.headers.get('x-anthropic-key');
+  const apiKey = userApiKey || process.env.ANTHROPIC_API_KEY;
+  
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'API key not configured' }), {
-      status: 500,
+    return new Response(JSON.stringify({ error: 'API key required. Please provide your Anthropic API key.' }), {
+      status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
   }
