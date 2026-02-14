@@ -23,6 +23,7 @@ export function useRoute(): { isLoading: boolean } {
   const { stops, route_segments } = useTripState();
   const dispatch = useTripDispatch();
   const [isLoading, setIsLoading] = useState(false);
+  const [mapboxToken, setMapboxToken] = useState<string>('');
 
   // Cache: maps "fromId-toId" to the fetched RouteSegment
   const cacheRef = useRef<Map<string, RouteSegment>>(new Map());
@@ -34,8 +35,23 @@ export function useRoute(): { isLoading: boolean } {
   const stopsRef = useRef<Stop[]>(stops);
   stopsRef.current = stops;
 
-  const fetchRoutes = useCallback(async (currentStops: Stop[]) => {
-    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  // Fetch Mapbox token from server
+  useEffect(() => {
+    async function fetchToken() {
+      try {
+        const res = await fetch('/api/mapbox-token');
+        const data = await res.json();
+        if (data.token) {
+          setMapboxToken(data.token);
+        }
+      } catch (error) {
+        console.error('Failed to fetch Mapbox token:', error);
+      }
+    }
+    fetchToken();
+  }, []);
+
+  const fetchRoutes = useCallback(async (currentStops: Stop[], token: string) => {
     if (!token || currentStops.length < 2) {
       return;
     }
@@ -159,20 +175,20 @@ export function useRoute(): { isLoading: boolean } {
 
   useEffect(() => {
     // Only fetch when route_segments is empty (cleared by reducer on stop changes)
-    // and there are at least 2 stops
-    if (route_segments.length > 0 || stops.length < 2) {
+    // and there are at least 2 stops, and we have a token
+    if (route_segments.length > 0 || stops.length < 2 || !mapboxToken) {
       return;
     }
 
     // Debounce: wait 300ms in case stops are changing rapidly
     const timer = setTimeout(() => {
-      fetchRoutes(stopsRef.current);
+      fetchRoutes(stopsRef.current, mapboxToken);
     }, 300);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [stops, route_segments.length, fetchRoutes]);
+  }, [stops, route_segments.length, mapboxToken, fetchRoutes]);
 
   // Cleanup: abort in-flight on unmount
   useEffect(() => {

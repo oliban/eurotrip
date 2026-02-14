@@ -8,25 +8,39 @@ import { useRoute } from '@/hooks/useRoute';
 import { useBurgerPlaces } from '@/hooks/useBurgerPlaces';
 import { Stop, RouteSegment } from '@/lib/types';
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
-
 export default function MapView() {
   const { stops, route_segments } = useTripState();
   const dispatch = useTripDispatch();
   const { isLoading } = useRoute();
   const [showBurgers, setShowBurgers] = useState(false);
   const { burgerPlaces, loading: burgersLoading } = useBurgerPlaces(stops, showBurgers);
+  const [mapboxToken, setMapboxToken] = useState<string>('');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const burgerMarkersRef = useRef<mapboxgl.Marker[]>([]);
 
-  // Initialize map ONCE
+  // Fetch Mapbox token from server
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    async function fetchToken() {
+      try {
+        const res = await fetch('/api/mapbox-token');
+        const data = await res.json();
+        if (data.token) {
+          setMapboxToken(data.token);
+          mapboxgl.accessToken = data.token;
+        }
+      } catch (error) {
+        console.error('Failed to fetch Mapbox token:', error);
+      }
+    }
+    fetchToken();
+  }, []);
 
-    mapboxgl.accessToken = MAPBOX_TOKEN;
+  // Initialize map ONCE (after token is loaded)
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current || !mapboxToken) return;
 
     const map = new mapboxgl.Map({
       container: containerRef.current,

@@ -25,6 +25,6 @@ primary_region = "arn" # Stockholm region
   cpus = 1
 
 # Environment variables (add via: fly secrets set KEY=value)
-# ANTHROPIC_API_KEY (optional - for demo mode fallback)
-# NEXT_PUBLIC_MAPBOX_TOKEN (required)
-# GOOGLE_PLACES_API_KEY (optional - for Phase 2)
+# ANTHROPIC_API_KEY (required - for Claude AI)
+# MAPBOX_TOKEN (required - for map and routing)
+# GOOGLE_PLACES_API_KEY (optional - for live burger spot discovery)
