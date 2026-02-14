@@ -1,7 +1,7 @@
 # fly.toml app configuration file generated for eurotrip on 2026-02-14
 
-app = 'eurotrip'
-primary_region = 'arn' # Stockholm region
+app = "eurotrip"
+primary_region = "arn" # Stockholm region
 
 [build]
 
