@@ -67,6 +67,7 @@ export interface TripMetadata {
   mode?: TripMode;
   burgerScore?: number;
   burgersCollected?: BurgerAchievement[];
+  foodQuery?: string;
 }
 
 export interface TripState {

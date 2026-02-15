@@ -189,6 +189,7 @@ export function processToolCall(
       if (typeof inp.travelers === 'number') payload.travelers = inp.travelers;
       if (typeof inp.total_budget === 'number') payload.total_budget = inp.total_budget;
       if (inp.currency) payload.currency = String(inp.currency);
+      if (inp.food_query) payload.foodQuery = String(inp.food_query);
 
       return {
         actions: [{ type: 'UPDATE_TRIP', payload }],

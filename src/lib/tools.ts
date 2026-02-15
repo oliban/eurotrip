@@ -188,6 +188,7 @@ export function getTripTools(currency: string = 'EUR') {
         travelers: { type: 'number' as const, description: 'Number of travelers' },
         total_budget: { type: 'number' as const, description: `Total budget in ${currency}` },
         currency: { type: 'string' as const, description: 'Currency code (default: EUR)' },
+        food_query: { type: 'string' as const, description: 'Google Places search query for food preferences (e.g. "italian restaurant", "vegan food", "seafood restaurant"). Set this after learning the travelers\' food preferences.' },
       },
     },
   },

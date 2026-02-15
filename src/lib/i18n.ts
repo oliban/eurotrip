@@ -5,11 +5,13 @@ export interface Translations {
   'chat.title': string;
   'chat.emptyTitle': string;
   'chat.emptySubtitle': string;
-  'chat.suggestion1': string;
-  'chat.suggestion2': string;
-  'chat.suggestion3': string;
   'chat.updatingTrip': string;
   'chat.confirmReset': string;
+  'chat.confirmBurgerOn': string;
+  'chat.confirmBurgerOff': string;
+  'chat.switchToBurger': string;
+  'chat.switchToStandard': string;
+  'chat.foodPreferences': string;
 
   // ChatInput
   'input.placeholder': string;
@@ -50,11 +52,13 @@ const en: Translations = {
   'chat.title': 'Trip Planner',
   'chat.emptyTitle': 'Plan your European road trip',
   'chat.emptySubtitle': 'Tell me where you want to go and I\'ll build your itinerary on the map.',
-  'chat.suggestion1': 'Plan a 2-week Italy road trip',
-  'chat.suggestion2': 'Weekend drive through the Alps',
-  'chat.suggestion3': 'Barcelona to Amsterdam in 10 days',
   'chat.updatingTrip': 'Updating your trip...',
   'chat.confirmReset': 'Start over? This will clear your current trip and conversation.',
+  'chat.confirmBurgerOn': 'Switch to Burger Challenge mode? Claude will adapt your current trip to focus on legendary burger spots.',
+  'chat.confirmBurgerOff': 'Switch to standard mode? Claude will adapt your current trip to a regular road trip.',
+  'chat.switchToBurger': 'Switch my trip to Burger Challenge mode! Adapt the existing stops to focus on legendary burger joints and add a burger achievement system.',
+  'chat.switchToStandard': 'Switch my trip back to standard road trip mode. Adapt the existing stops to a regular sightseeing trip.',
+  'chat.foodPreferences': 'I want to find great restaurants along my route! Ask me about our food preferences (cuisine types, dietary restrictions, budget, etc.) and then set the food_query so restaurants show up on the map.',
 
   'input.placeholder': 'Plan your trip...',
 
@@ -91,11 +95,13 @@ const sv: Translations = {
   'chat.title': 'Reseplanerare',
   'chat.emptyTitle': 'Planera din europeiska roadtrip',
   'chat.emptySubtitle': 'Berätta vart du vill åka så bygger jag din resplan på kartan.',
-  'chat.suggestion1': 'Planera en 2-veckors roadtrip i Italien',
-  'chat.suggestion2': 'Helgresa genom Alperna',
-  'chat.suggestion3': 'Barcelona till Amsterdam på 10 dagar',
   'chat.updatingTrip': 'Uppdaterar din resa...',
   'chat.confirmReset': 'Börja om? Detta rensar din nuvarande resa och konversation.',
+  'chat.confirmBurgerOn': 'Byt till Burger Challenge-läge? Claude anpassar din nuvarande resa till att fokusera på legendariska burgarställen.',
+  'chat.confirmBurgerOff': 'Byt till standardläge? Claude anpassar din nuvarande resa till en vanlig roadtrip.',
+  'chat.switchToBurger': 'Byt min resa till Burger Challenge-läge! Anpassa befintliga stopp för att fokusera på legendariska burgarställen och lägg till ett burger-achievement-system.',
+  'chat.switchToStandard': 'Byt min resa tillbaka till vanligt roadtrip-läge. Anpassa befintliga stopp till en vanlig sightseeingresa.',
+  'chat.foodPreferences': 'Jag vill hitta bra restauranger längs vår rutt! Fråga mig om våra matpreferenser (kökstyper, allergier, budget osv.) och sätt sedan food_query så att restauranger visas på kartan.',
 
   'input.placeholder': 'Planera din resa...',
 

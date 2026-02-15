@@ -3,25 +3,48 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useTripState, useTripDispatch } from '@/store/trip-context';
+import { useTripState, useTripDispatch, useTripContext } from '@/store/trip-context';
 import { useRoute } from '@/hooks/useRoute';
-import { useBurgerPlaces } from '@/hooks/useBurgerPlaces';
+import { useFoodPlaces } from '@/hooks/useFoodPlaces';
 import { useLocale } from '@/hooks/useLocale';
 import { Stop, RouteSegment } from '@/lib/types';
 
 export default function MapView() {
   const { stops, route_segments } = useTripState();
+  const { state: tripState } = useTripContext();
   const dispatch = useTripDispatch();
   const { isLoading } = useRoute();
   const { currency } = useLocale();
-  const [showBurgers, setShowBurgers] = useState(false);
-  const { burgerPlaces, loading: burgersLoading } = useBurgerPlaces(stops, showBurgers);
+  const [showFood, setShowFood] = useState(false);
+
+  const isBurgerMode = tripState.metadata.mode === 'burger_challenge';
+  const foodQuery = isBurgerMode ? 'burger' : (tripState.metadata.foodQuery || 'restaurant');
+  const hasPreferences = isBurgerMode || !!tripState.metadata.foodQuery;
+
+  const { foodPlaces, loading: foodLoading } = useFoodPlaces(stops, showFood && hasPreferences, foodQuery);
   const [mapboxToken, setMapboxToken] = useState<string>('');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
-  const burgerMarkersRef = useRef<mapboxgl.Marker[]>([]);
+  const foodMarkersRef = useRef<mapboxgl.Marker[]>([]);
+
+  const handleFoodToggle = () => {
+    if (!showFood && !hasPreferences) {
+      // No preferences yet — switch to chat and ask Claude
+      window.location.hash = 'chat';
+      window.dispatchEvent(new CustomEvent('food-preferences-request'));
+      return;
+    }
+    setShowFood(!showFood);
+  };
+
+  // Auto-enable food overlay once preferences come in
+  useEffect(() => {
+    if (hasPreferences && !showFood && tripState.metadata.foodQuery) {
+      setShowFood(true);
+    }
+  }, [tripState.metadata.foodQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch Mapbox token from server
   useEffect(() => {
@@ -253,27 +276,29 @@ export default function MapView() {
     }
   }, [route_segments]);
 
-  // Update burger markers when burger places change
+  // Update food markers when food places change
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !showBurgers) {
-      // Remove all burger markers if disabled
-      burgerMarkersRef.current.forEach((marker) => marker.remove());
-      burgerMarkersRef.current = [];
+    if (!map || !showFood) {
+      foodMarkersRef.current.forEach((marker) => marker.remove());
+      foodMarkersRef.current = [];
       return;
     }
 
-    // Remove existing burger markers
-    burgerMarkersRef.current.forEach((marker) => marker.remove());
-    burgerMarkersRef.current = [];
+    foodMarkersRef.current.forEach((marker) => marker.remove());
+    foodMarkersRef.current = [];
 
-    // Add new burger markers
-    burgerPlaces.forEach((place) => {
+    const markerEmoji = isBurgerMode ? '\u{1F354}' : '\u{1F37D}\u{FE0F}';
+    const markerColor = isBurgerMode ? '#f59e0b' : '#ec4899';
+    const markerHoverColor = isBurgerMode ? '#d97706' : '#db2777';
+    const category = isBurgerMode ? 'burger' as const : 'food' as const;
+
+    foodPlaces.forEach((place) => {
       const el = document.createElement('div');
       el.style.width = '28px';
       el.style.height = '28px';
       el.style.borderRadius = '50%';
-      el.style.backgroundColor = '#f59e0b';
+      el.style.backgroundColor = markerColor;
       el.style.display = 'flex';
       el.style.alignItems = 'center';
       el.style.justifyContent = 'center';
@@ -281,9 +306,8 @@ export default function MapView() {
       el.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
       el.style.cursor = 'pointer';
       el.style.border = '2px solid white';
-      el.textContent = '🍔';
+      el.textContent = markerEmoji;
 
-      // Find nearest stop to this burger place
       const nearestStop = stops.reduce<Stop | null>((best, stop) => {
         const d = Math.hypot(stop.coordinates.lat - place.location.lat, stop.coordinates.lng - place.location.lng);
         if (!best) return stop;
@@ -299,17 +323,17 @@ export default function MapView() {
         <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
           <strong style="font-size: 13px;">${place.name}</strong>
         </div>
-        <span style="color: #6b7280; font-size: 11px;">⭐ ${place.rating}/5</span>
-        ${place.priceLevel ? `<span style="color: #6b7280; font-size: 11px;"> · ${'€'.repeat(place.priceLevel)}</span>` : ''}
+        <span style="color: #6b7280; font-size: 11px;">\u{2B50} ${place.rating}/5</span>
+        ${place.priceLevel ? `<span style="color: #6b7280; font-size: 11px;"> \u{00B7} ${'\u{20AC}'.repeat(place.priceLevel)}</span>` : ''}
         <br/>
         <span style="color: #6b7280; font-size: 11px;">${place.address}</span>
       `;
 
       const addBtn = document.createElement('button');
       addBtn.textContent = '+ Add to plan';
-      addBtn.style.cssText = 'margin-top:6px;width:100%;padding:4px 0;border:none;border-radius:6px;background:#f59e0b;color:white;font-size:12px;font-weight:600;cursor:pointer;';
-      addBtn.addEventListener('mouseenter', () => { addBtn.style.background = '#d97706'; });
-      addBtn.addEventListener('mouseleave', () => { addBtn.style.background = '#f59e0b'; });
+      addBtn.style.cssText = `margin-top:6px;width:100%;padding:4px 0;border:none;border-radius:6px;background:${markerColor};color:white;font-size:12px;font-weight:600;cursor:pointer;`;
+      addBtn.addEventListener('mouseenter', () => { addBtn.style.background = markerHoverColor; });
+      addBtn.addEventListener('mouseleave', () => { addBtn.style.background = markerColor; });
       addBtn.addEventListener('click', () => {
         if (!nearestStop) return;
         dispatch({
@@ -321,16 +345,16 @@ export default function MapView() {
                 ...nearestStop.activities,
                 {
                   name: place.name,
-                  category: 'burger' as const,
+                  category,
                   address: place.address,
-                  description: `⭐ ${place.rating}/5 on Google`,
+                  description: `\u{2B50} ${place.rating}/5 on Google`,
                   duration_hours: 1,
                 },
               ],
             },
           },
         });
-        addBtn.textContent = '✓ Added to ' + nearestStop.name;
+        addBtn.textContent = '\u{2713} Added to ' + nearestStop.name;
         addBtn.style.background = '#16a34a';
         addBtn.style.cursor = 'default';
         addBtn.disabled = true;
@@ -347,27 +371,30 @@ export default function MapView() {
         .setPopup(popup)
         .addTo(map);
 
-      burgerMarkersRef.current.push(marker);
+      foodMarkersRef.current.push(marker);
     });
-  }, [burgerPlaces, showBurgers, stops, dispatch]);
+  }, [foodPlaces, showFood, stops, dispatch, isBurgerMode]);
 
   return (
     <div className="relative w-full h-full">
       <div ref={containerRef} className="w-full h-full" style={{ minHeight: '300px' }} />
       
-      {/* Burger toggle button */}
+      {/* Food toggle button */}
       {stops.length > 0 && (
         <button
-          onClick={() => setShowBurgers(!showBurgers)}
+          onClick={handleFoodToggle}
           className={`absolute top-3 left-3 backdrop-blur-sm rounded-lg px-3 py-2 shadow-md text-sm font-medium flex items-center gap-2 transition-colors ${
-            showBurgers
-              ? 'bg-amber-500 text-white hover:bg-amber-600'
+            showFood
+              ? isBurgerMode ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-pink-500 text-white hover:bg-pink-600'
               : 'bg-white/90 text-gray-700 hover:bg-white'
           }`}
         >
-          <span className="text-base">🍔</span>
-          {showBurgers ? 'Hide' : 'Show'} Burger Spots
-          {burgersLoading && (
+          <span className="text-base">{isBurgerMode ? '\u{1F354}' : '\u{1F37D}\u{FE0F}'}</span>
+          {isBurgerMode
+            ? (showFood ? 'Hide Burger Spots' : 'Show Burger Spots')
+            : (showFood ? 'Hide Restaurants' : 'Find Restaurants')
+          }
+          {foodLoading && (
             <svg
               className="animate-spin h-3 w-3"
               xmlns="http://www.w3.org/2000/svg"

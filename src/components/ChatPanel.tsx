@@ -9,6 +9,7 @@ import ChatInput, { ChatInputHandle } from './ChatInput';
 import ChatMessage from './ChatMessage';
 import { ModeSelector } from './ModeSelector';
 import { BurgerProgress } from './BurgerProgress';
+import { getRandomSuggestions } from '@/lib/suggestions';
 import type { Locale } from '@/lib/i18n';
 import type { TripMode } from '@/lib/types';
 
@@ -32,7 +33,13 @@ export default function ChatPanel() {
     }
   }, [messages.length, tripState.stops.length]);
 
-  const suggestions = [t['chat.suggestion1'], t['chat.suggestion2'], t['chat.suggestion3']];
+  const [suggestions, setSuggestions] = useState(() => getRandomSuggestions(locale));
+  useEffect(() => {
+    setSuggestions(getRandomSuggestions(locale));
+  }, [locale]);
+  const reshuffleSuggestions = useCallback(() => {
+    setSuggestions(getRandomSuggestions(locale));
+  }, [locale]);
   const dispatch = useTripDispatch();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollAnchorRef = useRef<HTMLDivElement>(null);
@@ -43,10 +50,35 @@ export default function ChatPanel() {
     scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Listen for food-preferences-request from MapView
+  const foodRequestSentRef = useRef(false);
+  useEffect(() => {
+    const handler = () => {
+      if (foodRequestSentRef.current) return;
+      foodRequestSentRef.current = true;
+      sendMessage(t['chat.foodPreferences']);
+      // Reset after a short delay to allow future requests
+      setTimeout(() => { foodRequestSentRef.current = false; }, 2000);
+    };
+    window.addEventListener('food-preferences-request', handler);
+    return () => window.removeEventListener('food-preferences-request', handler);
+  }, [sendMessage, t]);
+
+  const isBurgerMode = tripState.metadata.mode === 'burger_challenge';
+
   const handleModeSelect = useCallback((mode: TripMode) => {
     dispatch({ type: 'UPDATE_TRIP', payload: { mode } });
     setShowModeSelector(false);
   }, [dispatch]);
+
+  const handleToggleBurgerMode = useCallback(() => {
+    const confirmMsg = isBurgerMode ? t['chat.confirmBurgerOff'] : t['chat.confirmBurgerOn'];
+    if (!window.confirm(confirmMsg)) return;
+    const newMode: TripMode = isBurgerMode ? 'standard' : 'burger_challenge';
+    dispatch({ type: 'UPDATE_TRIP', payload: { mode: newMode } });
+    const adaptMsg = isBurgerMode ? t['chat.switchToStandard'] : t['chat.switchToBurger'];
+    sendMessage(adaptMsg);
+  }, [dispatch, isBurgerMode, sendMessage, t]);
 
   const handleReset = useCallback(() => {
     if (!window.confirm(t['chat.confirmReset'])) return;
@@ -112,6 +144,18 @@ export default function ChatPanel() {
               </>
             )}
           </div>
+          {/* Burger mode toggle */}
+          <button
+            onClick={handleToggleBurgerMode}
+            aria-label={isBurgerMode ? 'Switch to standard mode' : 'Switch to burger mode'}
+            className={`flex h-10 w-10 items-center justify-center rounded-lg text-lg transition-all ${
+              isBurgerMode
+                ? 'bg-amber-50 hover:bg-amber-100'
+                : 'opacity-30 grayscale hover:opacity-60 hover:bg-zinc-100'
+            }`}
+          >
+            <span className="select-none">{'\u{1F354}'}</span>
+          </button>
           {/* Reset button */}
           <button
             onClick={handleReset}
@@ -168,6 +212,13 @@ export default function ChatPanel() {
                   {suggestion}
                 </button>
               ))}
+              <button
+                onClick={reshuffleSuggestions}
+                aria-label="Shuffle suggestions"
+                className="mx-auto mt-1 flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 active:scale-90"
+              >
+                <span className="text-lg select-none">{'\u{1F3B2}'}</span>
+              </button>
             </div>
           </div>
         ) : (
