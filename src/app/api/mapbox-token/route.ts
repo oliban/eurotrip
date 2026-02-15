@@ -2,7 +2,7 @@
 // This allows us to keep the token secret and avoid NEXT_PUBLIC_ build-time issues
 
 export async function GET() {
-  const token = process.env.MAPBOX_TOKEN;
+  const token = process.env.MAPBOX_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   
   if (!token) {
     return Response.json({ error: 'Mapbox token not configured' }, { status: 500 });
