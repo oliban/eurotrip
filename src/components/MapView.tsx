@@ -106,6 +106,20 @@ export default function MapView() {
     };
   }, [mapboxToken]);
 
+  // Resize map when container becomes visible (e.g. switching from chat to map tab on mobile)
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const ro = new ResizeObserver(() => {
+      if (mapRef.current && container.clientWidth > 0 && container.clientHeight > 0) {
+        mapRef.current.resize();
+      }
+    });
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, []);
+
   // Update markers when stops change
   useEffect(() => {
     const map = mapRef.current;
