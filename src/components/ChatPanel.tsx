@@ -83,7 +83,7 @@ export default function ChatPanel() {
             <button
               onClick={() => setShowLocalePicker((v) => !v)}
               aria-label="Change language and currency"
-              className="flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 min-h-[44px] -my-2"
+              className="flex h-10 items-center gap-1.5 rounded-lg px-2 text-sm text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
             >
               <span className="text-base">{LOCALE_OPTIONS.find((o) => o.value === locale)?.flag}</span>
               <span className="text-xs font-medium">{currency}</span>
@@ -116,7 +116,7 @@ export default function ChatPanel() {
           <button
             onClick={handleReset}
             aria-label="Reset conversation"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 min-w-[44px] min-h-[44px] -m-2"
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600"
           >
             <svg
               width="18"

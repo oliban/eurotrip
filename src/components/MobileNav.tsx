@@ -73,7 +73,7 @@ export default function MobileNav({ activeView, onViewChange }: MobileNavProps) 
     { key: 'plan' as const, label: t['nav.plan'], Icon: PlanIcon },
   ];
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-20 flex h-14 items-center border-t border-zinc-200 bg-white shadow-[0_-2px_8px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-14 items-center border-t border-zinc-200 bg-white shadow-[0_-2px_8px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom)]">
       {tabs.map(({ key, label, Icon }) => {
         const active = activeView === key;
         return (

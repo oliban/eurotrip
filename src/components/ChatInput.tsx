@@ -77,7 +77,7 @@ const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function ChatInput
 
   return (
     <div className="border-t border-zinc-200 bg-white px-3 py-3 sm:px-4">
-      <div className="flex items-end gap-2 rounded-xl border border-zinc-300 bg-white px-3 py-2 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-colors">
+      <div className="flex items-end gap-2 rounded-xl border border-zinc-300 bg-white pl-3 pr-1.5 py-1.5 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-colors">
         <textarea
           ref={textareaRef}
           value={value}
@@ -93,7 +93,7 @@ const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function ChatInput
           <button
             onClick={onStop}
             aria-label="Stop generating"
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-white transition-colors hover:bg-zinc-700 active:bg-zinc-900 min-w-[44px] min-h-[44px] -m-2"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-white transition-colors hover:bg-zinc-700 active:bg-zinc-900"
           >
             {/* Square stop icon */}
             <svg
@@ -111,7 +111,7 @@ const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function ChatInput
             onClick={handleSubmit}
             disabled={!canSend}
             aria-label="Send message"
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white transition-colors hover:bg-blue-700 active:bg-blue-800 disabled:bg-zinc-300 disabled:cursor-not-allowed min-w-[44px] min-h-[44px] -m-2"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white transition-colors hover:bg-blue-700 active:bg-blue-800 disabled:bg-zinc-300 disabled:cursor-not-allowed"
           >
             {/* Arrow up send icon */}
             <svg
