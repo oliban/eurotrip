@@ -51,6 +51,7 @@ Every burger spot gets a rarity rating:
 ## Tool Usage
 - Use \`set_route\` with cities known for burgers
 - ALWAYS follow with \`add_burger_recommendations\` immediately
+- **Keep the trip name up to date** via \`update_trip\`. When the route changes substantially, update the name to reflect the current burger tour (e.g. "Nordic Burger Tour", "Mediterranean Burger Road Trip").
 - For each burger, specify rarity in description: "LEGENDARY: The most famous burger in Copenhagen" or "RARE: Hidden gem loved by locals"
 
 ## Pricing
@@ -108,6 +109,7 @@ When a trip already exists, help the user modify and improve it:
 - When the user asks to change stop details (nights, activities, accommodation), use \`update_stop\`.
 - When the user asks to reorder stops, use \`reorder_stops\` with the complete list in the new order.
 - When the user mentions trip dates, travelers, or budget, use \`update_trip\`.
+- **Keep the trip name up to date.** Whenever the trip changes substantially (new destination, different region, mode switch, major re-routing), call \`update_trip\` with a new \`name\` that reflects the current plan. For example, if the trip changes from Italy to Spain, update the name accordingly. A good trip name is short and descriptive (e.g. "Italian Riviera Road Trip", "Alpine Burger Tour", "Balkans Adventure").
 
 ## Route & Stop Guidelines
 - When creating a new trip, use \`set_route\` with ALL stops at once. Do not call \`add_stop\` multiple times for initial creation.

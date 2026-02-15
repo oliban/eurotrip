@@ -105,7 +105,7 @@ function AppContent() {
             // Desktop: always show as sidebar
             'lg:flex lg:w-[380px] lg:shrink-0 lg:flex-col lg:border-r lg:border-zinc-200 xl:w-[420px]',
             // Mobile: pb-16 clears fixed MobileNav; min-h-0 lets flex item shrink so inner overflow-y-auto works
-            activeView === 'chat' ? 'flex min-h-0 flex-1 flex-col pb-16 lg:pb-14 lg:flex-initial' : 'hidden lg:flex',
+            activeView === 'chat' ? 'flex min-h-0 flex-1 flex-col pb-16 lg:pb-0 lg:flex-initial' : 'hidden lg:flex',
           ].join(' ')}
         >
           <ChatPanel />

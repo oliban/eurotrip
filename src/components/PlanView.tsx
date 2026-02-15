@@ -274,10 +274,10 @@ export default function PlanView({ onExportPdf, className = '' }: PlanViewProps)
                 )}
 
                 {/* Stop card */}
-                <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+                <div className="group/stop rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
                   {/* Stop header */}
                   <div className="mb-3 flex items-start justify-between">
-                    <div>
+                    <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
                           {index + 1}
@@ -297,11 +297,20 @@ export default function PlanView({ onExportPdf, className = '' }: PlanViewProps)
                         <span>{stop.nights} {stop.nights !== 1 ? t['plan.nights'] : t['plan.night']}</span>
                       </div>
                     </div>
-                    {stopBudget > 0 && (
-                      <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
-                        ~{currencySymbol}{stopBudget.toLocaleString()}
-                      </span>
-                    )}
+                    <div className="flex shrink-0 items-center gap-2">
+                      {stopBudget > 0 && (
+                        <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
+                          ~{currencySymbol}{stopBudget.toLocaleString()}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => dispatch({ type: 'REMOVE_STOP', payload: { stopId: stop.id } })}
+                        className="flex h-6 w-6 items-center justify-center rounded-full text-xs text-zinc-400 transition-colors hover:bg-red-100 hover:text-red-600 lg:opacity-0 lg:group-hover/stop:opacity-100"
+                        title="Remove stop"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
 
                   {/* Activities */}
@@ -335,7 +344,7 @@ export default function PlanView({ onExportPdf, className = '' }: PlanViewProps)
                                 />
                                 <button
                                   onClick={handleDelete}
-                                  className="absolute top-2 right-2 hidden h-6 w-6 items-center justify-center rounded-full bg-red-100 text-xs text-red-600 transition-colors hover:bg-red-200 group-hover:flex"
+                                  className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-xs text-red-600 transition-colors hover:bg-red-200 lg:hidden lg:group-hover:flex"
                                   title="Remove"
                                 >
                                   ✕
@@ -362,7 +371,7 @@ export default function PlanView({ onExportPdf, className = '' }: PlanViewProps)
                               </div>
                               <button
                                 onClick={handleDelete}
-                                className="mt-0.5 hidden h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100 text-[10px] text-red-600 transition-colors hover:bg-red-200 group-hover:flex"
+                                className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100 text-[10px] text-red-600 transition-colors hover:bg-red-200 lg:hidden lg:group-hover:flex"
                                 title="Remove"
                               >
                                 ✕

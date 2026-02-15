@@ -46,8 +46,13 @@ export default function ChatPanel() {
   const chatInputRef = useRef<ChatInputHandle>(null);
 
   // Auto-scroll to bottom on new messages or streaming updates
+  // Use scrollTo on the container instead of scrollIntoView, which in Firefox
+  // scrolls all ancestor elements and pushes the entire page upward.
   useEffect(() => {
-    scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    }
   }, [messages]);
 
   // Listen for food-preferences-request from MapView
