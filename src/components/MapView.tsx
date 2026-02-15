@@ -6,12 +6,14 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { useTripState, useTripDispatch } from '@/store/trip-context';
 import { useRoute } from '@/hooks/useRoute';
 import { useBurgerPlaces } from '@/hooks/useBurgerPlaces';
+import { useLocale } from '@/hooks/useLocale';
 import { Stop, RouteSegment } from '@/lib/types';
 
 export default function MapView() {
   const { stops, route_segments } = useTripState();
   const dispatch = useTripDispatch();
   const { isLoading } = useRoute();
+  const { currency } = useLocale();
   const [showBurgers, setShowBurgers] = useState(false);
   const { burgerPlaces, loading: burgersLoading } = useBurgerPlaces(stops, showBurgers);
   const [mapboxToken, setMapboxToken] = useState<string>('');
@@ -134,13 +136,30 @@ export default function MapView() {
 
       // Build popup HTML
       const nightsText = stop.nights === 1 ? '1 night' : `${stop.nights} nights`;
-      const countryText = stop.country ? `<br/><span style="color: #6b7280; font-size: 12px;">${stop.country}</span>` : '';
+      const sym = currency === 'SEK' ? 'kr' : currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€';
+
+      const activitiesHtml = stop.activities.slice(0, 4).map((a) => {
+        const icon = a.category === 'burger' ? '🍔' : a.category === 'fondue' ? '🧀' : a.category === 'food' ? '🍽️' : a.category === 'adventure' ? '🏔️' : a.category === 'culture' ? '🏛️' : a.category === 'nightlife' ? '🌙' : a.category === 'shopping' ? '🛍️' : '📍';
+        return `<div style="display:flex;align-items:center;gap:4px;"><span style="font-size:12px;">${icon}</span><span style="font-size:11px;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">${a.name}</span></div>`;
+      }).join('');
+      const moreCount = stop.activities.length - 4;
+
+      const accomHtml = stop.accommodation
+        ? `<div style="display:flex;align-items:center;gap:4px;margin-top:4px;padding-top:4px;border-top:1px solid #e5e7eb;"><span style="font-size:12px;">🏨</span><span style="font-size:11px;color:#374151;">${stop.accommodation.name}</span>${stop.accommodation.cost_per_night ? `<span style="font-size:10px;color:#9ca3af;margin-left:auto;">${sym}${stop.accommodation.cost_per_night}/n</span>` : ''}</div>`
+        : '';
+
+      const stopCost = (stop.accommodation?.cost_per_night || 0) * stop.nights + stop.activities.reduce((s, a) => s + (a.cost_estimate || 0), 0);
+
       const popupHtml = `
-        <div style="font-family: system-ui, sans-serif; padding: 2px;">
-          <strong style="font-size: 14px;">${stop.name}</strong>
-          ${countryText}
-          <br/>
-          <span style="color: #6b7280; font-size: 12px;">${nightsText}</span>
+        <div style="font-family: system-ui, sans-serif; padding: 4px; min-width: 200px; max-width: 260px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <strong style="font-size: 14px;">${stop.name}</strong>
+            ${stop.country ? `<span style="font-size:11px;color:#9ca3af;">${stop.country}</span>` : ''}
+          </div>
+          <div style="font-size:11px;color:#6b7280;margin:2px 0 6px;">🗓️ ${nightsText}${stopCost > 0 ? ` · ~${sym}${Math.round(stopCost)}` : ''}</div>
+          ${activitiesHtml ? `<div style="display:flex;flex-direction:column;gap:2px;">${activitiesHtml}</div>` : ''}
+          ${moreCount > 0 ? `<div style="font-size:10px;color:#9ca3af;margin-top:2px;">+${moreCount} more</div>` : ''}
+          ${accomHtml}
         </div>
       `;
 
@@ -162,7 +181,7 @@ export default function MapView() {
 
       markersRef.current.push(marker);
     });
-  }, [stops, dispatch]);
+  }, [stops, dispatch, currency]);
 
   // Fit bounds when stops change (2+ stops)
   useEffect(() => {
@@ -250,21 +269,64 @@ export default function MapView() {
       el.style.border = '2px solid white';
       el.textContent = '🍔';
 
-      const popupHtml = `
-        <div style="font-family: system-ui, sans-serif; padding: 4px; max-width: 200px;">
+      // Find nearest stop to this burger place
+      const nearestStop = stops.reduce<Stop | null>((best, stop) => {
+        const d = Math.hypot(stop.coordinates.lat - place.location.lat, stop.coordinates.lng - place.location.lng);
+        if (!best) return stop;
+        const bestD = Math.hypot(best.coordinates.lat - place.location.lat, best.coordinates.lng - place.location.lng);
+        return d < bestD ? stop : best;
+      }, null);
+
+      const popupEl = document.createElement('div');
+      popupEl.style.fontFamily = 'system-ui, sans-serif';
+      popupEl.style.padding = '4px';
+      popupEl.style.maxWidth = '220px';
+      popupEl.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
           <strong style="font-size: 13px;">${place.name}</strong>
-          <br/>
-          <span style="color: #6b7280; font-size: 11px;">⭐ ${place.rating}/5</span>
-          ${place.priceLevel ? `<span style="color: #6b7280; font-size: 11px;"> • ${'€'.repeat(place.priceLevel)}</span>` : ''}
-          <br/>
-          <span style="color: #6b7280; font-size: 11px;">${place.address}</span>
         </div>
+        <span style="color: #6b7280; font-size: 11px;">⭐ ${place.rating}/5</span>
+        ${place.priceLevel ? `<span style="color: #6b7280; font-size: 11px;"> · ${'€'.repeat(place.priceLevel)}</span>` : ''}
+        <br/>
+        <span style="color: #6b7280; font-size: 11px;">${place.address}</span>
       `;
+
+      const addBtn = document.createElement('button');
+      addBtn.textContent = '+ Add to plan';
+      addBtn.style.cssText = 'margin-top:6px;width:100%;padding:4px 0;border:none;border-radius:6px;background:#f59e0b;color:white;font-size:12px;font-weight:600;cursor:pointer;';
+      addBtn.addEventListener('mouseenter', () => { addBtn.style.background = '#d97706'; });
+      addBtn.addEventListener('mouseleave', () => { addBtn.style.background = '#f59e0b'; });
+      addBtn.addEventListener('click', () => {
+        if (!nearestStop) return;
+        dispatch({
+          type: 'UPDATE_STOP',
+          payload: {
+            stopId: nearestStop.id,
+            updates: {
+              activities: [
+                ...nearestStop.activities,
+                {
+                  name: place.name,
+                  category: 'burger' as const,
+                  address: place.address,
+                  description: `⭐ ${place.rating}/5 on Google`,
+                  duration_hours: 1,
+                },
+              ],
+            },
+          },
+        });
+        addBtn.textContent = '✓ Added to ' + nearestStop.name;
+        addBtn.style.background = '#16a34a';
+        addBtn.style.cursor = 'default';
+        addBtn.disabled = true;
+      });
+      popupEl.appendChild(addBtn);
 
       const popup = new mapboxgl.Popup({
         offset: 15,
         closeButton: false,
-      }).setHTML(popupHtml);
+      }).setDOMContent(popupEl);
 
       const marker = new mapboxgl.Marker({ element: el })
         .setLngLat([place.location.lng, place.location.lat])
@@ -273,7 +335,7 @@ export default function MapView() {
 
       burgerMarkersRef.current.push(marker);
     });
-  }, [burgerPlaces, showBurgers]);
+  }, [burgerPlaces, showBurgers, stops, dispatch]);
 
   return (
     <div className="relative w-full h-full">

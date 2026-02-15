@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useReactToPrint } from 'react-to-print';
 import { TripProvider, useTripState } from '@/store/trip-context';
+import PasswordGate from '@/components/PasswordGate';
 import ViewTabs from '@/components/ViewTabs';
 import MobileNav from '@/components/MobileNav';
 import PlanView from '@/components/PlanView';
@@ -165,8 +166,10 @@ function AppContent() {
 
 export default function Home() {
   return (
-    <TripProvider>
-      <AppContent />
-    </TripProvider>
+    <PasswordGate>
+      <TripProvider>
+        <AppContent />
+      </TripProvider>
+    </PasswordGate>
   );
 }

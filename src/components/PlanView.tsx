@@ -1,6 +1,6 @@
 'use client';
 
-import { useTripState } from '@/store/trip-context';
+import { useTripState, useTripDispatch } from '@/store/trip-context';
 import { useLocale } from '@/hooks/useLocale';
 import { BurgerCard } from './BurgerCard';
 import type { Stop, RouteSegment } from '@/lib/types';
@@ -161,6 +161,7 @@ interface PlanViewProps {
 
 export default function PlanView({ onExportPdf, className = '' }: PlanViewProps) {
   const state = useTripState();
+  const dispatch = useTripDispatch();
   const { locale, currency: localeCurrency, t } = useLocale();
   const { metadata, stops, route_segments } = state;
 
@@ -191,7 +192,7 @@ export default function PlanView({ onExportPdf, className = '' }: PlanViewProps)
     totalEstimatedCost += accomCost + activityCost;
   }
 
-  const currency = metadata.currency || localeCurrency;
+  const currency = localeCurrency;
   const currencySymbol = currency === 'EUR' ? '\u20AC' : currency === 'GBP' ? '\u00A3' : currency === 'USD' ? '$' : currency === 'SEK' ? 'kr' : currency;
 
   return (
@@ -311,21 +312,41 @@ export default function PlanView({ onExportPdf, className = '' }: PlanViewProps)
                       </h4>
                       <div className="space-y-2">
                         {stop.activities.map((activity, ai) => {
+                          const handleDelete = () => {
+                            dispatch({
+                              type: 'UPDATE_STOP',
+                              payload: {
+                                stopId: stop.id,
+                                updates: {
+                                  activities: stop.activities.filter((_, i) => i !== ai),
+                                },
+                              },
+                            });
+                          };
+
                           // Use special card for burger and fondue activities
                           if (activity.category === 'burger' || activity.category === 'fondue') {
                             return (
-                              <BurgerCard
-                                key={ai}
-                                activity={activity}
-                                travelers={metadata.travelers || 1}
-                                currency={currency}
-                              />
+                              <div key={ai} className="group relative">
+                                <BurgerCard
+                                  activity={activity}
+                                  travelers={metadata.travelers || 1}
+                                  currency={currency}
+                                />
+                                <button
+                                  onClick={handleDelete}
+                                  className="absolute top-2 right-2 hidden h-6 w-6 items-center justify-center rounded-full bg-red-100 text-xs text-red-600 transition-colors hover:bg-red-200 group-hover:flex"
+                                  title="Remove"
+                                >
+                                  ✕
+                                </button>
+                              </div>
                             );
                           }
-                          
+
                           // Regular activity rendering
                           return (
-                            <div key={ai} className="flex items-start gap-2 text-sm text-zinc-700">
+                            <div key={ai} className="group flex items-start gap-2 text-sm text-zinc-700">
                               <span className="mt-0.5 shrink-0 text-xs">
                                 {getCategoryIcon(activity.category)}
                               </span>
@@ -339,6 +360,13 @@ export default function PlanView({ onExportPdf, className = '' }: PlanViewProps)
                                   {activity.cost_estimate !== undefined && activity.cost_estimate > 0 && ` \u00B7 ${currencySymbol}${activity.cost_estimate}`}
                                 </span>
                               </div>
+                              <button
+                                onClick={handleDelete}
+                                className="mt-0.5 hidden h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100 text-[10px] text-red-600 transition-colors hover:bg-red-200 group-hover:flex"
+                                title="Remove"
+                              >
+                                ✕
+                              </button>
                             </div>
                           );
                         })}
