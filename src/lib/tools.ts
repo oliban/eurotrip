@@ -1,7 +1,8 @@
 // Claude tool definitions for the Anthropic API
 // These define the JSON schemas Claude uses to structure tool_use calls
 
-export const TRIP_TOOLS = [
+export function getTripTools(currency: string = 'EUR') {
+  return [
   {
     name: 'set_route',
     description:
@@ -47,7 +48,7 @@ export const TRIP_TOOLS = [
                 },
                 required: ['name', 'type'],
               },
-              daily_budget: { type: 'number' as const, description: 'Estimated daily budget in EUR' },
+              daily_budget: { type: 'number' as const, description: `Estimated daily budget in ${currency}` },
               notes: { type: 'string' as const },
             },
             required: ['name', 'lat', 'lng', 'nights'],
@@ -56,7 +57,7 @@ export const TRIP_TOOLS = [
         trip_name: { type: 'string' as const, description: 'Name for the trip' },
         start_date: { type: 'string' as const, description: 'Trip start date (YYYY-MM-DD)' },
         travelers: { type: 'number' as const, description: 'Number of travelers' },
-        total_budget: { type: 'number' as const, description: 'Total trip budget in EUR' },
+        total_budget: { type: 'number' as const, description: `Total trip budget in ${currency}` },
       },
       required: ['stops'],
     },
@@ -185,7 +186,7 @@ export const TRIP_TOOLS = [
         start_date: { type: 'string' as const, description: 'Start date (YYYY-MM-DD)' },
         end_date: { type: 'string' as const, description: 'End date (YYYY-MM-DD)' },
         travelers: { type: 'number' as const, description: 'Number of travelers' },
-        total_budget: { type: 'number' as const, description: 'Total budget in EUR' },
+        total_budget: { type: 'number' as const, description: `Total budget in ${currency}` },
         currency: { type: 'string' as const, description: 'Currency code (default: EUR)' },
       },
     },
@@ -213,7 +214,7 @@ export const TRIP_TOOLS = [
                     restaurant_name: { type: 'string' as const, description: 'Restaurant name' },
                     specialty: { type: 'string' as const, description: 'Signature burger or dish (e.g., "Classic smash burger with truffle fries")' },
                     address: { type: 'string' as const, description: 'Street address' },
-                    cost_estimate: { type: 'number' as const, description: 'Cost per person in EUR' },
+                    cost_estimate: { type: 'number' as const, description: `Cost per person in ${currency}` },
                     time_suggestion: { type: 'string' as const, description: 'Recommended time (e.g., "Lunch", "Dinner")' },
                     description: { type: 'string' as const, description: 'What makes this place special' },
                   },
@@ -251,7 +252,7 @@ export const TRIP_TOOLS = [
                     restaurant_name: { type: 'string' as const, description: 'Restaurant name' },
                     specialty: { type: 'string' as const, description: 'Type of fondue (e.g., "Traditional Gruyère & Vacherin blend")' },
                     address: { type: 'string' as const, description: 'Street address' },
-                    cost_estimate: { type: 'number' as const, description: 'Cost per person in EUR' },
+                    cost_estimate: { type: 'number' as const, description: `Cost per person in ${currency}` },
                     time_suggestion: { type: 'string' as const, description: 'Recommended time (usually "Dinner")' },
                     description: { type: 'string' as const, description: 'What makes this place special' },
                   },
@@ -267,3 +268,4 @@ export const TRIP_TOOLS = [
     },
   },
 ] as const;
+}

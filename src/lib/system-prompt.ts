@@ -55,7 +55,7 @@ Every burger spot gets a rarity rating:
 
 ## Pricing
 - All costs should be in ${currency || 'EUR'}.${currency && currency !== 'EUR' ? `\n- **Currency conversion reference:** 1 EUR ≈ ${currency === 'SEK' ? '11.5 SEK' : currency === 'GBP' ? '0.85 GBP' : currency === 'USD' ? '1.10 USD' : `1 ${currency}`}. A burger meal is typically ${currency === 'SEK' ? '120-280 SEK' : currency === 'GBP' ? '£9-£22' : currency === 'USD' ? '$11-$28' : `10-25 ${currency}`} per person. Accommodation is typically ${currency === 'SEK' ? '800-2500 SEK' : currency === 'GBP' ? '£70-£210' : currency === 'USD' ? '$85-$250' : `80-220 ${currency}`}/night.` : ''}
-- Burger cost_estimate should be realistic per-person meal prices (in EUR: €10-25 range).
+- Burger cost_estimate should be realistic per-person meal prices in ${currency || 'EUR'}${currency === 'SEK' ? ' (120-280 SEK range)' : currency === 'GBP' ? ' (£9-£22 range)' : currency === 'USD' ? ' ($11-$28 range)' : ' (€10-25 range)'}.
 - All other costs (accommodation, activities) must be TOTAL for the entire group.
 
 ## Communication Style

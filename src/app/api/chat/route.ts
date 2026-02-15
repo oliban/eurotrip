@@ -1,4 +1,4 @@
-import { TRIP_TOOLS } from '@/lib/tools';
+import { getTripTools } from '@/lib/tools';
 import { buildSystemPrompt } from '@/lib/system-prompt';
 import { TripState } from '@/lib/types';
 
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
         model: 'claude-opus-4-6',
         max_tokens: 4096,
         system: systemPrompt,
-        tools: TRIP_TOOLS,
+        tools: getTripTools(currency || 'EUR'),
         messages,
         stream: true,
       }),
